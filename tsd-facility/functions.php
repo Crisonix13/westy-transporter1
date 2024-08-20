@@ -151,7 +151,6 @@ function handleDeleteWasteProfile() {
 function handleUploadFile() {
     $targetDir = "uploads/";
     $targetFile = $targetDir . basename($_FILES["file"]["name"]);
-    $uploadOk = 1;
     $fileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
 
     // Check if file was uploaded and has no errors
@@ -168,20 +167,20 @@ function handleUploadFile() {
 
     // Try to move the uploaded file
     if (move_uploaded_file($_FILES["file"]["tmp_name"], $targetFile)) {
-        $fileType = htmlspecialchars($_POST['fileType']);
+        $requirement = htmlspecialchars($_POST['requirement']);
 
         // Store file information in session
         $_SESSION['uploadedFiles'] = $_SESSION['uploadedFiles'] ?? [];
         $_SESSION['uploadedFiles'][] = [
             'fileName' => $_FILES['file']['name'],
             'filePath' => $targetFile,
-            'fileType' => $fileType
+            'fileType' => $requirement
         ];
 
         // Update the filled requirements in session
         $_SESSION['filledRequirements'] = $_SESSION['filledRequirements'] ?? [];
-        if (!in_array($fileType, $_SESSION['filledRequirements'])) {
-            $_SESSION['filledRequirements'][] = $fileType;
+        if (!in_array($requirement, $_SESSION['filledRequirements'])) {
+            $_SESSION['filledRequirements'][] = $requirement;
         }
 
         echo "File uploaded successfully!";
@@ -216,8 +215,15 @@ function handleDeleteFile() {
     exit();
 }
 
+
+
+
 // Main switch statement
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    echo "<pre>";
+    print_r($_POST);
+    print_r($_FILES);
+    echo "</pre>";
     switch (true) {
         case isset($_POST['addPermit']):
             handleAddPermit();

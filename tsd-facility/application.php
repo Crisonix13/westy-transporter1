@@ -481,47 +481,42 @@
             </div>
         </div>
         <?php elseif ($currentStep === 5): ?>
-            <?php
-$documents = [
-    'affidavit' => 'Duly notarized affidavit attesting to the truth, accuracy, and genuineness of all information, documents, and records contained and attached in the application.',
-    'mass_balance' => 'Mass balance of manufacturing process',
-    'waste_management' => 'Description of existing waste management plan',
-    'waste_analysis' => 'Analysis of waste(s)',
-    'other_info' => 'Other relevant information e.g. planned changes in production process or output, comparison with relation operation.',
-    'ecc' => 'Copy of Environmental Compliance Certificate (ECC) / Certificate of Non-Coverage (CNC)',
-    'pto' => 'Copy of Valid Permit to Operate (PTO)',
-    'dp' => 'Copy of Valid Discharge Permit (DP)',
-    'pco' => 'Pollution Control Officer accreditations certificate',
-    'contingency' => 'Contingency and Emergency Plan',
-    'photos' => 'Photographs of the hazardous waste storage area',
-    'official_letter' => 'Official letter of request',
-    'list_tenants' => 'List of individual tenants/establishments',
-    'info_member' => 'Information on the individual member establishment per approved cluster',
-    'clustering_letter' => 'Letter from the EMB Central Office on the approved clustering',
-    'affidavit_joint' => 'Affidavit of Joint Understanding among individual member establishments, the cluster Managing Head, and the cluster PCO',
-    'map' => 'Map of clustered individual establishments including geotagged photos of the facade of the establishments'
-];
-?>
-
-<div class="container w-75 my-5">
+<form id="step5Form" action="functions.php" method="post" enctype="multipart/form-data">
+    <div class="container w-75 my-5">
         <div class="card my-3">
             <div class="card-body">
                 <h1 class="fw-bold my-3 me-2">Upload Attachments</h1>
                 
                 <!-- List of Checkboxes with Text -->
-                <?php foreach ($documents as $key => $document): ?>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" disabled id="flexCheck<?php echo $key; ?>" 
-                            <?php if (isset($_SESSION['filledRequirements']) && in_array($key, $_SESSION['filledRequirements'])): ?>
-                                checked
-                            <?php endif; ?>
-                        >
-                        <label class="form-check-label" for="flexCheck<?php echo $key; ?>" style="font-weight: bold;">
-                            <?php echo $document; ?>
-                        </label>
-                    </div>
-                <?php endforeach; ?>
+                <?php
+                $documents = [
+                    'Duly notarized affidavit attesting to the truth, accuracy, and genuineness of all information, documents, and records contained and attached in the application.',
+                    'Mass balance of manufacturing process',
+                    'Description of existing waste management plan',
+                    'Analysis of waste(s)',
+                    'Other relevant information e.g. planned changes in production process or output, comparison with relation operation.',
+                    'Copy of Environmental Compliance Certificate (ECC) / Certificate of Non-Coverage (CNC)',
+                    'Copy of Valid Permit to Operate (PTO)',
+                    'Copy of Valid Discharge Permit (DP)',
+                    'Pollution Control Officer accreditations certificate',
+                    'Contingency and Emergency Plan',
+                    'Photographs of the hazardous waste storage area',
+                    'Official letter of request',
+                    'List of individual tenants/establishments',
+                    'Information on the individual member establishment per approved cluster',
+                    'Letter from the EMB Central Office on the approved clustering',
+                    'Affidavit of Joint Understanding among individual member establishments, the cluster Managing Head, and the cluster PCO',
+                    'Map of clustered individual establishments including geotagged photos of the facade of the establishments'
+                ];
                 
+                foreach ($documents as $index => $document) {
+                    echo '<div class="form-check">';
+                    echo '<input class="form-check-input" type="checkbox" disabled id="flexCheck' . $index . '">';
+                    echo '<label class="form-check-label" for="flexCheck' . $index . '" style="font-weight: bold;">' . $document . '</label>';
+                    echo '</div>';
+                }
+                ?>
+
                 <!-- Buttons -->
                 <div class="row align-items-center my-2">
                     <div class="col-xl-6 col-lg-6 col-md-6">
@@ -538,34 +533,25 @@ $documents = [
             </div>
         </div>
     </div>
+</form>
 
-
-
-    <div class="modal fade" id="uploadFileModal" tabindex="-1" aria-labelledby="uploadFileModalLabel" aria-hidden="true">
+<!-- File Upload Modal -->
+<div class="modal fade" id="uploadFileModal" tabindex="-1" aria-labelledby="uploadFileModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="uploadFileModalLabel">Upload File</h5>
+                <h5 class="modal-title" id="uploadFileModalLabel">Upload Files</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="uploadForm" action="functions.php" method="post" enctype="multipart/form-data">
+                <!-- File Upload Form -->
+                <form id="fileUploadForm" enctype="multipart/form-data">
                     <div class="mb-3">
-                        <label for="fileInput" class="form-label">Choose a file to upload:</label>
-                        <input class="form-control" type="file" id="fileInput" name="file" required>
+                        <input class="form-control" type="file" id="fileUploadInput" name="files[]" multiple>
                     </div>
-                    <div class="mb-3">
-                        <label for="fileType" class="form-label">Select the file type:</label>
-                        <select class="form-select" id="fileType" name="fileType" required>
-                            <option value="">Select Type</option>
-                            <?php foreach ($documents as $key => $document): ?>
-                                <option value="<?php echo htmlspecialchars($key); ?>"><?php echo htmlspecialchars($document); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Upload</button>
+                    <button type="button" class="btn btn-primary" onclick="uploadFiles()">Upload</button>
                 </form>
-                <div id="uploadStatus" class="mt-3"></div>
+
                 <!-- Table for Displaying Uploaded Files -->
                 <div class="mt-4">
                     <h6>Uploaded Files:</h6>
@@ -577,19 +563,7 @@ $documents = [
                             </tr>
                         </thead>
                         <tbody id="uploadedFilesTable">
-                            <?php if (isset($_SESSION['uploadedFiles'])): ?>
-                                <?php foreach ($_SESSION['uploadedFiles'] as $index => $file): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($file['fileName']); ?></td>
-                                        <td>
-                                            <form action="functions.php" method="post" style="display:inline;">
-                                                <input type="hidden" name="delete_key" value="<?php echo $index; ?>">
-                                                <button type="submit" name="delete_file" class="btn btn-danger btn-sm">Delete</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
+                            <!-- Files will be added here -->
                         </tbody>
                     </table>
                 </div>
@@ -597,6 +571,7 @@ $documents = [
         </div>
     </div>
 </div>
+<?php endif; ?>
 
 
 <!-- Add Permit -->
@@ -850,34 +825,108 @@ $documents = [
     </div>
 </div>
 
+<!-- Modal for Uploading Files -->
+<div class="modal fade" id="uploadFileModal" tabindex="-1" aria-labelledby="uploadFileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadFileModalLabel">Upload File</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadForm" action="functions.php" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="fileInput" class="form-label">Choose a file to upload:</label>
+                    <input class="form-control" type="file" id="fileInput" name="file" required>
+                </div>
+                <div class="mb-3">
+                    <label for="fileType" class="form-label">Select the file type:</label>
+                    <select class="form-select" id="fileType" name="fileType" required>
+                        <option value="">Select Type</option>
+                            <option value="affidavit">Duly notarized affidavit</option>
+                            <option value="mass_balance">Mass balance of manufacturing process</option>
+                            <option value="waste_management">Description of existing waste management plan</option>
+                            <option value="waste_analysis">Analysis of waste(s)</option>
+                            <option value="other_info">Other relevant information</option>
+                            <option value="ecc">Copy of Environmental Compliance Certificate (ECC) / Certificate of Non-Coverage (CNC)</option>
+                            <option value="pto">Copy of Valid Permit to Operate (PTO)</option>
+                            <option value="dp">Copy of Valid Discharge Permit (DP)</option>
+                            <option value="pco">Pollution Control Officer accreditations certificate</option>
+                            <option value="contingency">Contingency and Emergency Plan</option>
+                            <option value="photos">Photographs of the hazardous waste storage area</option>
+                            <option value="official_letter">Official letter of request</option>
+                            <option value="list_tenants">List of individual tenants/establishments</option>
+                            <option value="info_member">Information on the individual member establishment per approved cluster</option>
+                            <option value="clustering_letter">Letter from the EMB Central Office on the approved clustering</option>
+                            <option value="affidavit_joint">Affidavit of Joint Understanding among individual member establishments, the cluster Managing Head, and the cluster PCO</option>
+                            <option value="map">Map of clustered individual establishments</option>
+                            </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </form>
+                <div id="uploadStatus" class="mt-3"></div>
+                <div class="mt-4">
+                    <h6>Uploaded Files:</h6>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Filename</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="uploadedFilesTable">
+                            <?php if (isset($_SESSION['uploadedFiles'])): ?>
+                                <?php foreach ($_SESSION['uploadedFiles'] as $index => $file): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($file['fileName']); ?></td>
+                                        <td>
+                                            <form action="functions.php" method="post" style="display:inline;">
+                                                <input type="hidden" name="delete_key" value="<?php echo $index; ?>">
+                                                <button type="submit" name="delete_file" class="btn btn-danger btn-sm">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Function to update checkboxes based on session data
-    function updateCheckboxes() {
-        fetch('functions.php', {
-            method: 'POST',
-            body: new URLSearchParams({
-                'get_filled_requirements': '1'
-            }),
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            const checkboxes = document.querySelectorAll('.form-check-input');
-            checkboxes.forEach(checkbox => {
-                const id = checkbox.id.replace('flexCheck', '');
-                checkbox.checked = data.includes(id);
-            });
-        })
-        .catch(error => console.error('Error:', error));
+    function uploadFiles() {
+        const input = document.getElementById('fileUploadInput');
+        const files = input.files;
+        const tableBody = document.getElementById('uploadedFilesTable');
+
+        for (const file of files) {
+            const row = document.createElement('tr');
+            const filenameCell = document.createElement('td');
+            const actionCell = document.createElement('td');
+
+            filenameCell.textContent = file.name;
+
+            // Create delete button
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.className = 'btn btn-danger btn-sm';
+            deleteButton.type = 'button';
+            deleteButton.onclick = function() {
+                row.remove();
+                // Additional functionality to delete the file from the server could be added here
+            };  
+
+            actionCell.appendChild(deleteButton);
+            row.appendChild(filenameCell);
+            row.appendChild(actionCell);
+            tableBody.appendChild(row);
+        }
+
+        // Clear the file input after adding the files to the table
+        input.value = '';
     }
+</script>
 
-    // Call the update function on page load
-    updateCheckboxes();
-});
-    </script>
-
-
-<?php endif; ?>
